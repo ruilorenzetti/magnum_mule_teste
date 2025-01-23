@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
-	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="866ab319-685d-45d7-9603-db7828212b8f">
 		<http:listener-connection host="0.0.0.0" port="8082" />
 	</http:listener-config>
@@ -16,10 +17,14 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	</http:request-config>
 	<vm:config name="VM_Config" doc:name="VM Config" doc:id="09091c3e-4e98-4737-8955-e652c05e6953" >
 		<vm:connection />
+		<expiration-policy maxIdleTime="60" timeUnit="MINUTES" />
 		<vm:queues >
-			<vm:queue queueName="marca_carros" />
+			<vm:queue queueName="marca_carros" maxOutstandingMessages="200"/>
 		</vm:queues>
 	</vm:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="8575e0ca-442d-4f0a-9cdf-72a910f66baa" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="q12we34rRui!" database="fipe_db" />
+	</db:config>
 	<flow name="api-main-flow" doc:id="be276d55-af6d-4f48-ab3b-29239158a90a" >
 		<http:listener doc:name="carga-inicial" doc:id="c9fe672d-25eb-4a3d-8961-38dead456a33" config-ref="HTTP_Listener_config" path="/api/v1/carga-inicial" allowedMethods="POST">
 			<ee:repeatable-file-store-stream bufferUnit="BYTE" />
@@ -51,7 +56,14 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		</foreach>
 	</flow>
 	<flow name="api-1Flow-teste-carga" doc:id="bc61481d-c0d9-4920-97b5-2595a3d727e9" >
-		<vm:listener queueName="marca_carros" doc:name="Listener" doc:id="deb9fe73-a4b5-4868-8a0d-1981ee8bc554" config-ref="VM_Config"/>
+		<vm:listener queueName="marca_carros" doc:name="Listener" doc:id="deb9fe73-a4b5-4868-8a0d-1981ee8bc554" config-ref="VM_Config" timeout="10" numberOfConsumers="1" timeoutUnit="MILLISECONDS"/>
+		<logger level="INFO" doc:name="Logger" doc:id="083ab244-b7b9-482c-9c5d-1080e7aa8a02" message="#[payload]"/>
+		<db:insert doc:id="27620edd-fa42-49f5-bb92-875cd948c330" doc:name="Insert Marcas Carros" config-ref="Database_Config" autoGenerateKeys="true">
+			<db:sql ><![CDATA[INSERT INTO fipe_db.marcas (codigo,nome) VALUES (:codigo, :nome);
+]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'codigo': payload['codigo'],
+'nome': payload['nome']}]]]></db:input-parameters>
+		</db:insert>
 		<logger level="INFO" doc:name="Logger" doc:id="152b92ec-033d-4046-bc24-91fc11317bd3" message="#[payload]"/>
 	</flow>
 </mule>
