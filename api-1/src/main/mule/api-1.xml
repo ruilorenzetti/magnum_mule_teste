@@ -1,69 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
 	xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
-	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="866ab319-685d-45d7-9603-db7828212b8f">
-		<http:listener-connection host="0.0.0.0" port="8082" />
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="4d60143b-4b46-4248-967a-ef84393541f8">
+		<http:listener-connection host="0.0.0.0"
+			port="8082" />
 	</http:listener-config>
-	<http:request-config name="HTTP_Request_configuration_carros_marcas" doc:name="HTTP Request configuration" doc:id="d5fdaa7c-66c0-48d6-81a4-7cf99ee1e90e" >
-		<http:request-connection host="parallelum.com.br/fipe/api/v1/carros/marcas" />
+	<http:request-config
+		name="HTTP_Request_configuration_carros_marcas"
+		doc:name="HTTP Request configuration"
+		doc:id="f1a67d5b-e9c1-45cc-8ad5-47f31d6f040d">
+		<http:request-connection
+			host="parallelum.com.br/fipe/api/v1/carros/marcas" />
 	</http:request-config>
-	<vm:config name="VM_Config" doc:name="VM Config" doc:id="09091c3e-4e98-4737-8955-e652c05e6953" >
+	<vm:config name="VM_Config" doc:name="VM Config"
+		doc:id="a7175023-06c1-4beb-adb9-6897b92e5c91">
 		<vm:connection />
-		<expiration-policy maxIdleTime="60" timeUnit="MINUTES" />
-		<vm:queues >
-			<vm:queue queueName="marca_carros" maxOutstandingMessages="200"/>
+		<expiration-policy maxIdleTime="60"
+			timeUnit="MINUTES" />
+		<vm:queues>
+			<vm:queue queueName="marca_carros"
+				maxOutstandingMessages="200" />
 		</vm:queues>
 	</vm:config>
-	<db:config name="Database_Config" doc:name="Database Config" doc:id="8575e0ca-442d-4f0a-9cdf-72a910f66baa" >
-		<db:my-sql-connection host="localhost" port="3306" user="root" password="q12we34rRui!" database="fipe_db" />
+	<db:config name="Database_Config" doc:name="Database Config"
+		doc:id="f5415aae-fcb9-4ba6-bdf4-fc64543824e6">
+		<db:my-sql-connection host="localhost"
+			port="3306" user="root" password="q12we34rRui!" database="fipe_db" />
 	</db:config>
-	<flow name="api-main-flow" doc:id="be276d55-af6d-4f48-ab3b-29239158a90a" >
-		<http:listener doc:name="carga-inicial" doc:id="c9fe672d-25eb-4a3d-8961-38dead456a33" config-ref="HTTP_Listener_config" path="/api/v1/carga-inicial" allowedMethods="POST">
-			<ee:repeatable-file-store-stream bufferUnit="BYTE" />
+	<http:request-config name="HTTP_Request_configuration_carros_modelos" doc:name="HTTP Request configuration" doc:id="ac846ebc-7362-4c98-bdfe-13928669dd1d" >
+		<http:request-connection host="parallelum.com.br" />
+	</http:request-config>
+	<flow name="api-main-flow"
+		doc:id="99cded47-3d89-4e4e-a2ea-d35ba3997bce">
+		<http:listener doc:name="carga-inicial"
+			doc:id="f249220c-cb03-4521-a0e9-124d0a269d24"
+			config-ref="HTTP_Listener_config" path="/api/v1/carga-inicial"
+			allowedMethods="POST">
+			<ee:repeatable-file-store-stream
+				bufferUnit="BYTE" />
 		</http:listener>
-		<logger level="INFO" doc:name="Logger" doc:id="4e67ff72-9c7c-4cf7-8933-2e7ec30d3597" />
-		<async doc:name="Async" doc:id="c59ecea6-5253-414e-8e8f-75b54f04d2e7" >
-			<flow-ref doc:name="Flow Reference" doc:id="58266e59-5ed5-4f37-99c5-7f95aa401616" name="carga-marcas-api-1-privateflow"/>
+		<logger level="INFO" doc:name="Logger"
+			doc:id="a74596d1-1cef-403c-b085-900a260727df" />
+		<async doc:name="Async"
+			doc:id="0929fb69-ca61-4b86-a873-32354c7dd5ce">
+			<flow-ref doc:name="Flow Reference"
+				doc:id="8d00d43e-2a51-4ed7-9515-ed2c596546ca"
+				name="carga-marcas-api-1-privateflow" />
 		</async>
 	</flow>
-	<flow name="carga-marcas-api-1-privateflow" doc:id="532edad9-eabd-4cda-a40d-4b9217910dbe" >
-		<http:request method="GET" doc:name="Request" doc:id="fecce842-5ae8-48d7-8548-06b5d7ecae96" config-ref="HTTP_Request_configuration_carros_marcas" url="http://parallelum.com.br/fipe/api/v1/carros/marcas"/>
-		<logger level="INFO" doc:name="Logger" doc:id="9ff2e8b0-83f8-4c15-ae00-b0b13017ac09" />
-		<http:request method="GET" doc:name="Request" doc:id="c8765f4a-d45b-4897-a563-4319286baaab" config-ref="HTTP_Request_configuration_carros_marcas" url="http://parallelum.com.br/fipe/api/v1/carros/marcas">
-			<ee:repeatable-file-store-stream bufferUnit="MB" />
+	<flow name="carga-marcas-api-1-privateflow"
+		doc:id="10925f78-1ef9-4779-a03b-f93ba8630e5a">
+		<http:request method="GET" doc:name="Request"
+			doc:id="c3a22b50-5a1d-4e1c-b3e7-b2ad1ee32007"
+			config-ref="HTTP_Request_configuration_carros_marcas"
+			url="http://parallelum.com.br/fipe/api/v1/carros/marcas" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="ea198259-45a1-4712-b692-250f4af66405" />
+		<http:request method="GET" doc:name="Request"
+			doc:id="7a882c7a-dcff-4a2b-a770-38d3f7643da0"
+			config-ref="HTTP_Request_configuration_carros_marcas"
+			url="http://parallelum.com.br/fipe/api/v1/carros/marcas">
+			<ee:repeatable-file-store-stream
+				bufferUnit="MB" />
 		</http:request>
-		<ee:transform doc:name="Transform Java" doc:id="1c0cabee-cff6-4499-a1b4-d0161a009153" >
+		<ee:transform doc:name="Transform Java"
+			doc:id="dbd1ccaf-f9ab-4ab9-8b06-9d678eda7b76">
 			<ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
+				<ee:set-payload><![CDATA[%dw 2.0
                 output application/java
                 ---
                 payload map (item) -> {
                     codigo: item.codigo,
                     nome: item.nome
                 }]]></ee:set-payload>
-            </ee:message>
+			</ee:message>
 		</ee:transform>
-		<foreach doc:name="For Each" doc:id="f7b82efc-0605-4f85-b73a-c0fc155b2dad">
-			<vm:publish doc:name="Publish" doc:id="fc043756-e777-420e-ba06-597d5c02e68d" config-ref="VM_Config" sendCorrelationId="NEVER" queueName="marca_carros"/>
+		<foreach doc:name="For Each"
+			doc:id="450bb2ed-3146-4c14-8b14-2ce0badfdc6b">
+			<vm:publish doc:name="Publish"
+				doc:id="b7621c9f-2486-4b6c-894d-f14002b8e571" config-ref="VM_Config"
+				sendCorrelationId="NEVER" queueName="marca_carros" />
 		</foreach>
 	</flow>
-	<flow name="api-1Flow-teste-carga" doc:id="bc61481d-c0d9-4920-97b5-2595a3d727e9" >
-		<vm:listener queueName="marca_carros" doc:name="Listener" doc:id="deb9fe73-a4b5-4868-8a0d-1981ee8bc554" config-ref="VM_Config" timeout="10" numberOfConsumers="1" timeoutUnit="MILLISECONDS"/>
-		<logger level="INFO" doc:name="Logger" doc:id="083ab244-b7b9-482c-9c5d-1080e7aa8a02" message="#[payload]"/>
-		<db:insert doc:id="27620edd-fa42-49f5-bb92-875cd948c330" doc:name="Insert Marcas Carros" config-ref="Database_Config" autoGenerateKeys="true">
-			<db:sql ><![CDATA[INSERT INTO fipe_db.marcas (codigo,nome) VALUES (:codigo, :nome);
+	<flow name="insert-marcas-api-1-privateflow"
+		doc:id="2b649371-42bd-4164-804d-d86d22fa46ee">
+		<vm:listener queueName="marca_carros" doc:name="Listener"
+			doc:id="29aa902d-ee3a-4536-ae2f-a94a5a05c0a0" config-ref="VM_Config"
+			timeout="10" numberOfConsumers="1" timeoutUnit="MILLISECONDS" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="401e18bc-ae6d-4789-b155-5cf4a3521c14" message="#[payload]" />
+		<db:insert doc:id="15ee6955-adb3-4777-b12b-51810a741743"
+			doc:name="Insert Marcas Carros" config-ref="Database_Config"
+			autoGenerateKeys="true">
+			<db:sql><![CDATA[INSERT INTO fipe_db.marcas (codigo,nome) VALUES (:codigo, :nome);
 ]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'codigo': payload['codigo'],
+			<db:input-parameters><![CDATA[#[{'codigo': payload['codigo'],
 'nome': payload['nome']}]]]></db:input-parameters>
 		</db:insert>
-		<logger level="INFO" doc:name="Logger" doc:id="152b92ec-033d-4046-bc24-91fc11317bd3" message="#[payload]"/>
+		<async doc:name="Async"
+			doc:id="6c66a47a-77c7-4c43-84ce-0cdd8ba83397">
+			<flow-ref doc:name="insert-modelos"
+				doc:id="2655d9ca-143a-4dcf-b5ac-4c69d368a19a"
+				name="insert-modelos-api-1-privateflow" />
+		</async>
 	</flow>
+	<flow name="insert-modelos-api-1-privateflow"
+		doc:id="4bdc19e8-5e25-44f2-a2f9-87d3e52b5214">
+		<!-- Listener para consumir marcas da fila -->
+		<vm:listener queueName="marca_carros" doc:name="Listener"
+			doc:id="0e9907a1-35a6-4b0e-b7f3-9136a475dad4" config-ref="VM_Config"
+			numberOfConsumers="1" timeout="10" timeoutUnit="MILLISECONDS" />
+
+		<!-- Logger para verificar o payload atual -->
+		<logger level="INFO" doc:name="Log Payload"
+			doc:id="2150b75a-ab45-4f0d-93a6-c583363f69f2" message="#[payload]" />
+
+		<!-- Set Variable para armazenar o codigo da marca -->
+		<set-variable variableName="codigo_marca_var"
+			value="#[payload.codigo]" doc:name="Set Codigo Marca Var" />
+
+		<!-- Requisição HTTP para obter modelos da marca -->
+		<http:request method="GET" doc:name="Request Modelos"
+			config-ref="HTTP_Request_configuration_carros_modelos"
+			url="#['http://parallelum.com.br/fipe/api/v1/carros/marcas/' ++ vars.codigo_marca_var ++ '/modelos']">
+		</http:request>
+
+
+		<!-- Transformação do payload recebido da API -->
+		<ee:transform doc:name="Transform Java"
+			doc:id="80f8796b-7fee-4b06-829a-c6a75605bc6a">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+            output application/java
+            ---
+            payload.modelos map (modelo) -> {
+                codigo_marca: vars.codigo_marca_var,
+                codigo_modelo: modelo.codigo,
+                nome_modelo: modelo.nome
+            }
+            ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<!-- Iterar sobre cada modelo para realizar ações -->
+		<foreach doc:name="For Each"
+			doc:id="568d764f-86b8-4cf4-b3c2-47dd49427e32">
+			<!-- Logger para verificar cada modelo -->
+			<logger level="INFO" doc:name="Logger"
+				doc:id="189082cf-abee-40cc-8f7b-238c67478d75" message="#[payload]" />
+		</foreach>
+	</flow>
+
 </mule>
